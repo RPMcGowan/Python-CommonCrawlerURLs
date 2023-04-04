@@ -1,0 +1,36 @@
+import re
+
+input_file = "DOWNLOAD AND CONVERT YOUR WARC FILE TO A .TXT"
+output_file = "CREATE A FILE PATH AND TITLE YOU WANT TO AS A .TXT"
+
+url = ''
+keywords = ''
+
+with open(input_file, 'r', encoding='utf-8', errors='replace') as f_in, open(output_file, 'w', encoding='utf-8', errors='replace') as f_out:
+    for line in f_in:
+        # search for URLs using regular expressions
+        url_match = re.search(r'(https?://[^\s]+)', line)
+
+        if url_match:
+            # write previous URL and keywords to output file
+            if url:
+                formatted_line = f"{url} |keywords:{keywords}\n"
+                f_out.write(formatted_line)
+
+            # update URL and reset keywords
+            url = url_match.group(1)
+            keywords = ''
+
+        elif line.startswith('Keywords:'):
+            # extract keywords from the current line
+            current_keywords = line.strip()[len('Keywords:'):].strip()
+            if current_keywords:
+                # append current keywords to the existing ones
+                if keywords:
+                    keywords += ', '
+                keywords += current_keywords
+
+    # write last URL and keywords to output file
+    if url:
+        formatted_line = f"{url} |keywords:{keywords}\n"
+        f_out.write(formatted_line)
